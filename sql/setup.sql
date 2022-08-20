@@ -6,6 +6,18 @@ CREATE TABLE bin_dirs(
 );
 
 /*
+    interpreter: the binary interpreter name
+    lang: the programming language recognized by the interpreter
+*/
+CREATE TABLE interpreters(
+    interpreter TEXT PRIMARY KEY,
+    lang TEXT NOT NULL
+);
+
+INSERT INTO interpreters VALUES('python', 'python');
+INSERT INTO interpreters VALUES('pythonw', 'python');
+
+/*
     name: the link identifier to manipulate it
     file: the path to the linked file
     program: the interpreter of the source or the source if the source is a program
@@ -18,6 +30,6 @@ CREATE TABLE links(
     file TEXT NOT NULL,
     program TEXT NOT NULL,
     link TEXT UNIQUE NOT NULL,
-    interpreter TEXT NOT NULL,
+    interpreter TEXT REFERENCES interpreters,
     state INT NOT NULL
 );
