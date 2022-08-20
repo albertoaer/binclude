@@ -22,3 +22,8 @@ def valid_dir(path: str):
 
 def valid_file(path: str):
     return os.path.isfile(path)
+
+def write_into(data: str, *path: str):
+    file = join_paths(*path)
+    with open(file, 'w') as writable:
+        writable.write(data)
