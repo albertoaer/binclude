@@ -1,6 +1,6 @@
 import os
 from typing import Union
-from .utils import base_origin, join_paths, origin, valid_dir, write_into
+from .utils import abspath, base_origin, join_paths, origin, valid_dir, write_into
 from .builder import create_for_python
 from .db import createDB, useDB
 
@@ -17,7 +17,7 @@ class CLIController:
 
     def add(self, file: str, name: str, uses: Union[str, None] = None, test: bool = False, hide: bool = False):
         db = useDB()
-        cmd = [file]
+        cmd = [abspath(file)]
         if uses:
             cmd.insert(0, uses)
         payload, interpreter = create_for_python(cmd, hide)

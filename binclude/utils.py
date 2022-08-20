@@ -1,11 +1,10 @@
 import os
 import sys
 
-def abs(path: str) -> str:
-    return os.path.abspath(path)
+from os.path import abspath
 
 def origin() -> str:
-    return abs(sys.argv[0])
+    return abspath(sys.argv[0])
 
 def base_origin() -> str:
     return os.path.dirname(origin())
