@@ -3,4 +3,7 @@ from binclude import *
 import fire
 
 if __name__ == '__main__':
-    fire.Fire(CLIController)
+    try:
+        fire.Fire(CLIController)
+    except Exception as e:
+        fatal(e)
