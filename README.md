@@ -1,6 +1,6 @@
 # Binclude
 
-A tool to create links executables to a folder located in the PATH
+A tool to link executables to a folder in the PATH
 
 The purpose is to have a practical way to add a program to the PATH an invoke it or remove it from the PATH without modifying the PATH
 
