@@ -38,13 +38,17 @@ class DB:
     def add_bin_dir(self, route: str):
         self.cur.execute('INSERT INTO bin_dirs VALUES(?)', (route,))
 
-    def get_bin_dir(self):
+    def get_bin_dir(self) -> str:
         self.cur.execute('SELECT route FROM bin_dirs')
         return self.cur.fetchone()[0]
 
     def add_link(self, name: str, file: str, program: str, link: str, interpreter: str, state: int):
         self.cur.execute('INSERT INTO links VALUES(?, ?, ?, ?, ?, ?)',
             (name, file, program, link, interpreter, state))
+
+    def links(self) -> list:
+        self.cur.execute('SELECT * FROM links')
+        return self.cur.fetchall()
 
 openedDB: Union[DB, None] = None
 
