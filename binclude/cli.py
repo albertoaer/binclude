@@ -1,5 +1,4 @@
 import os
-from tokenize import tabsize
 from typing import Union
 from tabulate import tabulate
 
@@ -11,6 +10,7 @@ BIN_NAME: str = 'binclude'
 
 class CLIController:
     def init(self, dir: str):
+        dir = abspath(dir)
         if not valid_dir(dir):
             raise Exception('Expecting valid directory')
         db = createDB()
