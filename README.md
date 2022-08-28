@@ -6,20 +6,26 @@ The purpose is to have a practical way to add a program to the PATH an invoke it
 
 The CLI is generated using [Fire](https://github.com/google/python-fire)
 
-The only requisite is to have python accesible from the PATH of the terminal you want to invoke it, also available for GUI using pythonw
-
 ## How to use it
 
-You must have a folder added to the PATH
+You must already have a directory added to the PATH in order to work
 
-Code this in the local binclude folder:
-
+Type this in the local binclude installation directory for initializing it
 ```
-python main.py init <PATH>
+python main.py init <DIR>
 ```
 
-Then you can access everywhere binclude:
+The currently supported interpreters are python, bash, cmd and powershell
 
-```
+Once initiated you will be able to type in Bash, CMD and PowerShell consoles:
+```ps
 binclude --help
 ```
+
+Some interpreters allow no extension, like python and bash, so the first in the list will be saved without extension and the other with extension. In the future will be configurable.
+
+To include a file in the PATH use:
+```
+binclude add <FILE> <NAME> <INTERPRETER>
+```
+The interpreter is optional and is use for applications that needs an interpreter like python, ruby, etc, has nothing to do with the internal link interpreter representation commented before.
