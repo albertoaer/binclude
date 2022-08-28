@@ -5,10 +5,14 @@ from .utils import base_origin, join_paths
 
 DB_FILE: str = 'binclude.db'
 
+
 def db_path():
     return join_paths(base_origin(), DB_FILE)
 
-class DBException(Exception): pass
+
+class DBException(Exception):
+    pass
+
 
 class DB:
     def __init__(self, path):
@@ -42,15 +46,17 @@ class DB:
         self.cur.execute('SELECT route FROM bin_dirs')
         return self.cur.fetchone()[0]
 
-    def add_link(self, name: str, file: str, program: str, link: str, interpreter: str, state: int):
-        self.cur.execute('INSERT INTO links VALUES(?, ?, ?, ?, ?, ?)',
-            (name, file, program, link, interpreter, state))
+    def add_link(self, name: str, file: str, program: str, link: str, interpreter: str, attributes: str, state: int):
+        self.cur.execute('INSERT INTO links VALUES(?, ?, ?, ?, ?, ?, ?)',
+                         (name, file, program, link, interpreter, attributes, state))
 
     def links(self) -> list:
         self.cur.execute('SELECT * FROM links')
         return self.cur.fetchall()
 
+
 openedDB: Union[DB, None] = None
+
 
 def createDB() -> DB:
     global openedDB
@@ -59,6 +65,7 @@ def createDB() -> DB:
     openedDB = DB(db_path())
     openedDB.setup()
     return openedDB
+
 
 def useDB() -> DB:
     global openedDB

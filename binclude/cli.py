@@ -1,9 +1,9 @@
 import os
-from typing import Union
+from typing import Set, Union
 from tabulate import tabulate
 
 from .utils import abspath, base_origin, join_paths, origin, valid_dir, write_into
-from .builder import create_for_python
+from .templates import templates, TemplateResult
 from .db import createDB, useDB
 
 BIN_NAME: str = 'binclude'
@@ -16,19 +16,46 @@ class CLIController:
         db = createDB()
         db.add_bin_dir(dir)
         db.commit()
-        self.add(origin(), BIN_NAME, 'python', False, False)
+        self.add(origin(), BIN_NAME, 'python', protect=True)
 
-    def add(self, file: str, name: str, uses: Union[str, None] = None, test: bool = False, hide: bool = False):
+    def add(
+        self,
+        file: str,
+        name: str,
+        uses: Union[str, None] = None,
+        attribs: Union[Set[str], None] = None,
+        protect: bool = False
+    ):
         db = useDB()
+
+        # Create the required data
         cmd = [abspath(file)]
         if uses:
             cmd.insert(0, uses)
-        payload, interpreter = create_for_python(cmd, hide)
+        if not attribs:
+            attribs = {}
         dir = db.get_bin_dir()
-        link = join_paths(dir, name)
-        db.add_link(name, cmd[len(cmd)-1], cmd[0], link, interpreter, 0)
-        write_into(payload, link)
-        db.commit()
+        interpreters = ['bash', 'python', 'cmd', 'powershell']
+
+        registered_names = []
+
+        for target in interpreters:
+            if target in templates:
+                result: TemplateResult = templates[target](cmd, attribs)
+                lnname = name
+                if not result.allow_no_extension or name in registered_names:
+                    lnname += result.extension
+                registered_names.append(lnname)
+                link = join_paths(dir, lnname)
+
+                # If there is an error in the database like repeated name,
+                # the file won't be written
+                db.add_link(
+                    lnname, cmd[-1], cmd[0], link,
+                    target, ','.join(result.attributes), 1 if protect else 0
+                )
+                write_into(result.output, link)
+                db.commit()
 
     def restore(self, name: str):
         pass
@@ -46,7 +73,8 @@ class CLIController:
         list() prints all the links registered in the db
         """
         links = useDB().links()
-        print(tabulate(links, headers=('name', 'file', 'program', 'link', 'interpreter', 'state')))
+        print(tabulate(links, headers=('name', 'file',
+              'program', 'link', 'interpreter', 'attributes', 'state')))
 
     def cwd(self):
         """
