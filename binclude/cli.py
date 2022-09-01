@@ -72,7 +72,14 @@ class CLIController:
         write_into(result.output, link)
 
     def remove(self, name: str, force: bool = False):
-        pass
+        db = useDB()
+        res = db.link_by_name(name, ['link', 'state'])
+        if not res:
+            raise Exception(f'Not found: {name}')
+        #If the link is protected and there is no force
+        if res[1] == 1 and not force:
+            raise Exception('Trying to remove protected link, use --force if you are sure')
+        os.remove(res[0])
 
     def repair(self):
         pass
