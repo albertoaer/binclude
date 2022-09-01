@@ -1,4 +1,4 @@
-from typing import Union
+from typing import List, Tuple, Union
 import os
 import sqlite3
 from .utils import base_origin, join_paths
@@ -50,10 +50,13 @@ class DB:
         self.cur.execute('INSERT INTO links VALUES(?, ?, ?, ?, ?, ?, ?)',
                          (name, file, program, link, interpreter, attributes, state))
 
-    def links(self) -> list:
-        self.cur.execute('SELECT * FROM links')
+    def links(self, columns: List[str]) -> list:
+        self.cur.execute(f"SELECT {', '.join(columns)} FROM links")
         return self.cur.fetchall()
 
+    def link_by_name(self, name: str, columns: List[str]) -> list:
+        self.cur.execute(f"SELECT {', '.join(columns)} FROM links WHERE name = ?", (name,))
+        return self.cur.fetchone()
 
 openedDB: Union[DB, None] = None
 

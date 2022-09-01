@@ -66,15 +66,17 @@ class CLIController:
     def repair(self):
         pass
 
-    def list(self):
+    def list(self, short: bool = False):
         """
         Get all the links
 
         list() prints all the links registered in the db
         """
-        links = useDB().links()
-        print(tabulate(links, headers=('name', 'file',
-              'program', 'link', 'interpreter', 'attributes', 'state')))
+        headers = 'name', 'file', 'program', 'link', 'interpreter', 'attribs', 'state'
+        if short:
+            headers = 'name', 'file', 'link', 'state'
+        links = useDB().links(headers)
+        print(tabulate(links, headers=headers))
 
     def cwd(self):
         """
