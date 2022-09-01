@@ -58,7 +58,18 @@ class CLIController:
                 db.commit()
 
     def restore(self, name: str):
-        pass
+        db = useDB()
+        res = db.link_by_name(name, ['program', 'file', 'link', 'interpreter', 'attribs'])
+        if not res:
+            raise Exception(f'Not found: {name}')
+        cmd = res[:2]
+        if cmd[0] == cmd[1]:
+            cmd = cmd[:1]
+        link = res[2]
+        interpreter = res[3]
+        attribs = res[4].split(',')
+        result: TemplateResult = templates[interpreter](cmd, attribs)
+        write_into(result.output, link)
 
     def remove(self, name: str, force: bool = False):
         pass
