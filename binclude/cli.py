@@ -58,6 +58,11 @@ class CLIController:
                 db.commit()
 
     def restore(self, name: str):
+        """
+        Restores a physical link file from the database
+        Arguments:
+            name: the link name
+        """
         db = useDB()
         res = db.link_by_name(name, ['program', 'file', 'link', 'interpreter', 'attribs'])
         if not res:
@@ -72,11 +77,18 @@ class CLIController:
         write_into(result.output, link)
 
     def remove(self, name: str, force: bool = False):
+        """
+        Removes the physical file associated to a name
+        The link will remain in the database
+        Arguments:
+            name: the link name
+            force: force the remove (used for protected links)
+        """
         db = useDB()
         res = db.link_by_name(name, ['link', 'state'])
         if not res:
             raise Exception(f'Not found: {name}')
-        #If the link is protected and there is no force
+        #The link must not be protected or the removal must be forced to proceed
         if res[1] == 1 and not force:
             raise Exception('Trying to remove protected link, use --force if you are sure')
         os.remove(res[0])
