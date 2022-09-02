@@ -2,8 +2,9 @@ import os
 from typing import Set, Union
 from tabulate import tabulate
 
+from .links import build_for_target, include_link, rebuild_link
 from .utils import abspath, base_origin, join_paths, origin, valid_dir, write_into
-from .templates import templates, TemplateResult
+from .templates import templates
 from .db import createDB, useDB
 
 BIN_NAME: str = 'binclude'
@@ -35,27 +36,21 @@ class CLIController:
         if not attribs:
             attribs = {}
         dir = db.get_bin_dir()
-        interpreters = ['bash', 'python', 'cmd', 'powershell']
+        interpreters = filter(lambda x: x in templates, ['bash', 'python', 'cmd', 'powershell'])
 
         registered_names = []
 
-        for target in interpreters:
-            if target in templates:
-                result: TemplateResult = templates[target](cmd, attribs)
-                lnname = name
-                if not result.allow_no_extension or name in registered_names:
-                    lnname += result.extension
-                registered_names.append(lnname)
-                link = join_paths(dir, lnname)
-
-                # If there is an error in the database like repeated name,
-                # the file won't be written
-                db.add_link(
-                    lnname, cmd[-1], cmd[0], link,
-                    target, ','.join(result.attributes), 1 if protect else 0
-                )
-                write_into(result.output, link)
-                db.commit()
+        for interpreter in interpreters:
+            result = build_for_target(interpreter, cmd, attribs)
+            lnname = name
+            if not result.allow_no_extension or name in registered_names:
+                lnname += result.extension
+            registered_names.append(lnname)
+            link = join_paths(dir, lnname)
+            # If there is an error in the database like repeated name, the file won't be written
+            include_link(db, lnname, cmd, link, interpreter, attribs, protect)
+            write_into(result.output, link)
+            db.commit()
 
     def restore(self, name: str):
         """
@@ -67,14 +62,17 @@ class CLIController:
         res = db.link_by_name(name, ['program', 'file', 'link', 'interpreter', 'attribs'])
         if not res:
             raise Exception(f'Not found: {name}')
-        cmd = res[:2]
-        if cmd[0] == cmd[1]:
-            cmd = cmd[:1]
-        link = res[2]
-        interpreter = res[3]
-        attribs = res[4].split(',')
-        result: TemplateResult = templates[interpreter](cmd, attribs)
-        write_into(result.output, link)
+        output, link = rebuild_link(*res)
+        write_into(output, link)
+
+    def repair(self):
+        """
+        Restores al the links stored in the database
+        """
+        db = useDB()
+        for res in db.links(['program', 'file', 'link', 'interpreter', 'attribs']):
+            output, link = rebuild_link(*res)
+            write_into(output, link)
 
     def remove(self, name: str, force: bool = False):
         """
@@ -92,9 +90,6 @@ class CLIController:
         if res[1] == 1 and not force:
             raise Exception('Trying to remove protected link, use --force if you are sure')
         os.remove(res[0])
-
-    def repair(self):
-        pass
 
     def list(self, short: bool = False):
         """
