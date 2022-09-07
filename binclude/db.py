@@ -58,6 +58,14 @@ class DB:
         self.cur.execute(f"SELECT {', '.join(columns)} FROM links WHERE name = ?", (name,))
         return self.cur.fetchone()
 
+    def remove_link(self, name: str, also_like: bool):
+        query = 'DELETE FROM links where name = ?'
+        items = [name,]
+        if also_like:
+            query += ' OR name LIKE ?'
+            items.append(name + '.%')
+        self.cur.execute(query, items)
+
 openedDB: Union[DB, None] = None
 
 

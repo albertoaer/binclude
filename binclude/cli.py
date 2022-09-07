@@ -91,6 +91,11 @@ class CLIController:
             raise Exception('Trying to remove protected link, use --force if you are sure')
         os.remove(res[0])
 
+    def purge(self, name, deep=False):
+        db = useDB()
+        db.remove_link(name, deep)
+        db.commit()
+
     def list(self, short: bool = False):
         """
         Get all the links
