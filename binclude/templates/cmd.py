@@ -4,7 +4,7 @@ from .common import TemplateResult
 
 
 template = """@ECHO off
-{target} %*
+"{target}" %*
 EXIT /b %errorlevel%
 """
 

@@ -9,7 +9,7 @@ def replace_slash(items: List[str]):
     return narr
 
 template = """#!/bin/sh
-{target} "$@"
+"{target}" "$@"
 exit $?"""
 
 def build_template(target: List[str], attrs: Set[str]) -> TemplateResult:
