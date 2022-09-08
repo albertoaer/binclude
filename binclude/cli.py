@@ -3,7 +3,7 @@ from typing import Set, Union
 from tabulate import tabulate
 
 from .links import build_for_target, include_link, rebuild_link
-from .utils import abspath, base_origin, join_paths, origin, valid_dir, valid_name, write_into
+from .utils import abspath, base_origin, confirm, join_paths, origin, valid_dir, valid_name, write_into
 from .templates import templates
 from .db import createDB, useDB
 
@@ -55,18 +55,21 @@ class CLIController:
             write_into(result.output, link)
             db.commit()
 
-    def restore(self, name: str):
+    def restore(self, name: str, deep: bool = False):
         """
         Restores a physical link file from the database
         Arguments:
             name: the link name
         """
         db = useDB()
-        res = db.link_by_name(name, ['program', 'file', 'link', 'interpreter', 'attribs'])
+        res = db.link_by_name(name, ['program', 'file', 'link', 'interpreter', 'attribs'], deep)
         if not res:
             raise Exception(f'Not found: {name}')
-        output, link = rebuild_link(*res)
-        write_into(output, link)
+        for x in res:
+            if not res:
+                raise Exception(f'Not found: {name}')
+            output, link = rebuild_link(*x)
+            write_into(output, link)
 
     def repair(self):
         """
@@ -77,7 +80,7 @@ class CLIController:
             output, link = rebuild_link(*res)
             write_into(output, link)
 
-    def remove(self, name: str, force: bool = False):
+    def remove(self, name: str, force: bool = False, deep: bool = False, purge: bool = False):
         """
         Removes the physical file associated to a name
         The link will remain in the database
@@ -86,18 +89,23 @@ class CLIController:
             force: force the remove (used for protected links)
         """
         db = useDB()
-        res = db.link_by_name(name, ['link', 'state'])
+        res = db.link_by_name(name, ['link', 'state'], deep)
         if not res:
             raise Exception(f'Not found: {name}')
-        #The link must not be protected or the removal must be forced to proceed
-        if res[1] == 1 and not force:
-            raise Exception('Trying to remove protected link, use --force if you are sure')
-        os.remove(res[0])
-
-    def purge(self, name, deep=False):
-        db = useDB()
-        db.remove_link(name, deep)
-        db.commit()
+        for x in res:
+            #The link must not be protected or the removal must be forced to proceed
+            if x[1] == 1 and not force:
+                raise Exception('Trying to remove protected link, use --force if you are sure')
+            try:
+                os.remove(x[0])
+                print("Removed", x[0])
+            except Exception as e:
+                print("INFO ERR:", e)
+        if purge:
+            db.remove_link(name, deep)
+            if confirm('purge'):
+                db.commit()
+                print("Purged", name, 'deep' if deep else '')
 
     def list(self, short: bool = False):
         """

@@ -34,3 +34,6 @@ def valid_name(name: str) -> bool:
     And it's followed from zero to many letters and numbers
     """
     return bool(re.match('^[A-z][A-z0-9]*$', name))
+
+def confirm(action: str) -> bool:
+    return input("Sure %s?[yes]: " % action) == 'yes'
