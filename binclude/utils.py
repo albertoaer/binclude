@@ -14,7 +14,7 @@ def join_paths(*paths: str) -> str:
 
 def fatal(reason: str):
     print("Error:", reason)
-    exit(-1)
+    exit(1)
 
 def valid_dir(path: str):
     return os.path.isdir(path)
