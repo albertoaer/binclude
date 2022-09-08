@@ -1,8 +1,14 @@
 from dataclasses import dataclass
-from typing import Set
+from typing import List, Set
 
 #The window flag indicate whether you like not to see the console, used for gui programs
 WINDOW_FLAG = 'win'
+
+def wrap_args(args: List[str]) -> List[str]:
+    nargs = []
+    for arg in args:
+        nargs.append(f'"{arg}"')
+    return nargs
 
 @dataclass
 class TemplateResult():
