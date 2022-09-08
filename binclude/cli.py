@@ -3,7 +3,7 @@ from typing import Set, Union
 from tabulate import tabulate
 
 from .links import build_for_target, include_link, rebuild_link
-from .utils import abspath, base_origin, join_paths, origin, valid_dir, write_into
+from .utils import abspath, base_origin, join_paths, origin, valid_dir, valid_name, write_into
 from .templates import templates
 from .db import createDB, useDB
 
@@ -28,6 +28,9 @@ class CLIController:
         protect: bool = False
     ):
         db = useDB()
+
+        if not valid_name(name):
+            raise ValueError('Invalid name, format: (letter)[... letters and numbers]')
 
         # Create the required data
         cmd = [abspath(file)]
