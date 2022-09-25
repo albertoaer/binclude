@@ -4,14 +4,14 @@ from binclude.db import useDB
 from tabulate import tabulate
 
 class SessionController:
-    def use(self, interpreter: str):
+    def enable(self, interpreter: str):
         db = useDB()
-        db.use_interpreter(interpreter, True)
+        db.enable_interpreter(interpreter, True)
         db.commit()
 
-    def unuse(self, interpreter: str):
+    def disable(self, interpreter: str):
         db = useDB()
-        db.use_interpreter(interpreter, False)
+        db.enable_interpreter(interpreter, False)
         db.commit()
 
     def get(self, active: Union[bool, None] = None):
