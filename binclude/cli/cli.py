@@ -44,7 +44,8 @@ class CLIController:
         if not attribs:
             attribs = {}
         dir = db.get_bin_dir()
-        interpreters = filter(lambda x: x in templates, ['bash', 'python', 'cmd', 'powershell'])
+        active = db.get_interpreters(True)
+        interpreters = filter(lambda x: x in templates, map(lambda x: x[0], active))
 
         registered_names = []
 
