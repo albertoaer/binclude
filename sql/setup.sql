@@ -55,6 +55,7 @@ CREATE TABLE IF NOT EXISTS arguments(
     position NUMBER,
     relative NUMBER,
     value TEXT NOT NULL,
+    active INT CHECK(active = 0 OR active = 1),
     PRIMARY KEY (namelike, position, relative),
     CHECK (position >= 0 AND position < 2), /*position must be between 0 and 2*/
     CHECK (position = 1 OR relative = 0) /*if not in the middle relative must be always 0*/
