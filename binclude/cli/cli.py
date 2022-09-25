@@ -2,6 +2,8 @@ import os
 from typing import Set, Union
 from tabulate import tabulate
 
+from .session import SessionController
+
 from ..links import build_for_target, include_link, rebuild_link
 from ..utils import abspath, base_origin, confirm, join_paths, origin, valid_dir, valid_name, write_into
 from ..templates import templates
@@ -10,6 +12,9 @@ from ..db import createDB, useDB
 BIN_NAME: str = 'binclude'
 
 class CLIController:
+    def __init__(self) -> None:
+        self.session = SessionController()
+
     def init(self, dir: str):
         dir = abspath(dir)
         if not valid_dir(dir):

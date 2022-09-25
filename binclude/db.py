@@ -71,8 +71,19 @@ class DB:
             items.append(name + '.%')
         self.cur.execute(query, items)
 
-openedDB: Union[DB, None] = None
+    def use_interpreter(self, name: str, do: bool):
+        self.cur.execute('UPDATE interpreters SET active = ? WHERE name = ?', (int(do), name))
 
+    def get_interpreters(self, use_filter: Union[bool, None] = None) -> List[Tuple[str, bool]]:
+        query = 'SELECT name, active FROM interpreters'
+        items = []
+        if use_filter != None:
+            query += ' WHERE active = ?'
+            items.append(int(use_filter))
+        self.cur.execute(query, items)
+        return list(map(lambda f: (f[0], bool(f[1])), self.cur.fetchall()))
+
+openedDB: Union[DB, None] = None
 
 def createDB() -> DB:
     global openedDB
