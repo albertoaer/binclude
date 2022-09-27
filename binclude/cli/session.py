@@ -1,6 +1,6 @@
 from typing import Union
 
-from binclude.db import useDB
+from ..db import useDB
 from tabulate import tabulate
 
 class SessionController:
