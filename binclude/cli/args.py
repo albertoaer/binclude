@@ -4,15 +4,15 @@ from ..db import useDB
 
 class ArgsCreator:
     def start(self, matcher: str, value: str):
-        self.__new(matcher, value, 0)
+        self.at(0, matcher, value)
 
     def middle(self, matcher: str, value: str):
-        self.__new(matcher, value, 1)
+        self.at(1, matcher, value)
     
     def end(self, matcher: str, value: str):
-        self.__new(matcher, value, 2)
+        self.at(2, matcher, value)
 
-    def __new(self, matcher: str, value: str, position: int):
+    def at(self, position: int, matcher: str, value: str):
         db = useDB()
         if value:
             db.add_argument(matcher, position, value)
