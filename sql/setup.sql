@@ -51,12 +51,11 @@ CREATE TABLE IF NOT EXISTS links(
     value: the actual value of the argument
 */
 CREATE TABLE IF NOT EXISTS arguments(
-    namelike TEXT,
-    position NUMBER,
-    relative NUMBER,
+    namelike TEXT NOT NULL,
+    position NUMBER NOT NULL,
+    relative NUMBER NOT NULL,
     value TEXT NOT NULL,
     active INT CHECK(active = 0 OR active = 1),
     PRIMARY KEY (namelike, position, relative),
-    CHECK (position >= 0 AND position < 2), /*position must be between 0 and 2*/
-    CHECK (position = 1 OR relative = 0) /*if not in the middle relative must be always 0*/
+    CHECK (position BETWEEN 0 AND 2) /*position must be between 0 and 2*/
 )
