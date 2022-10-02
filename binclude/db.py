@@ -5,14 +5,11 @@ from .utils import base_origin, join_paths
 
 DB_FILE: str = 'binclude.db'
 
-
 def db_path():
     return join_paths(base_origin(), DB_FILE)
 
-
 class DBException(Exception):
     pass
-
 
 class DB:
     def __init__(self, path):
@@ -64,7 +61,7 @@ class DB:
         return self.cur.fetchall()
 
     def remove_link(self, name: str, also_like: bool):
-        query = 'DELETE FROM links where name = ?'
+        query = 'DELETE FROM links WHERE name = ?'
         items = [name,]
         if also_like:
             query += ' OR name LIKE ?'
@@ -82,6 +79,37 @@ class DB:
             items.append(int(filter))
         self.cur.execute(query, items)
         return list(map(lambda f: (f[0], bool(f[1])), self.cur.fetchall()))
+
+    def add_argument(self, namelike: str, position: int, value: str):
+        self.cur.execute(
+            'SELECT MAX(relative) FROM arguments WHERE namelike = ? AND position = ?',
+            (namelike, position)
+        )
+        elem = self.cur.fetchone()
+        relative = 0 if elem[0] is None else elem[0] + 1
+        self.cur.execute('INSERT INTO arguments VALUES(?,?,?,?,?)', (namelike, position, relative, value, 1))
+
+    def arguments(self, columns: List[str]) -> list:
+        self.cur.execute(f"SELECT {', '.join(columns)} FROM arguments")
+        return self.cur.fetchall()
+
+    def remove_argument(self, id: str):
+        self.cur.execute(
+            "DELETE FROM arguments WHERE namelike||':'||position||':'||relative = ?",
+            (id,)
+        )
+
+    def update_argument(self, id: str, value: str):
+        self.cur.execute(
+            "UPDATE arguments SET value = ? WHERE namelike||':'||position||':'||relative = ?",
+            (value, id)
+        )
+
+    def enable_interpreter(self, id: str, do: bool):
+        self.cur.execute(
+            "UPDATE arguments SET active = ? WHERE namelike||':'||position||':'||relative = ?",
+            (int(do), id)
+        )
 
 openedDB: Union[DB, None] = None
 

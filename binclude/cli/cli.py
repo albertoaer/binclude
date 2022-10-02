@@ -2,6 +2,7 @@ import os
 from typing import Set, Union
 from tabulate import tabulate
 
+from .args import ArgsController
 from .session import SessionController
 
 from ..links import build_for_target, include_link, rebuild_link
@@ -14,6 +15,7 @@ BIN_NAME: str = 'binclude'
 class CLIController:
     def __init__(self) -> None:
         self.session = SessionController()
+        self.args = ArgsController()
 
     def init(self, dir: str):
         dir = abspath(dir)
@@ -113,7 +115,7 @@ class CLIController:
                 db.commit()
                 print("Purged", name, 'deep' if deep else '')
 
-    def list(self, short: bool = False):
+    def ls(self, short: bool = False):
         """
         Get all the links
 

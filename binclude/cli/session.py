@@ -14,6 +14,6 @@ class SessionController:
         db.enable_interpreter(interpreter, False)
         db.commit()
 
-    def list(self, active: Union[bool, None] = None):
+    def ls(self, active: Union[bool, None] = None):
         data = useDB().get_interpreters(active)
         print(tabulate(data, headers=('interpreter', 'is active?')))
