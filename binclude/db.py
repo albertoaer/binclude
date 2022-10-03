@@ -95,19 +95,19 @@ class DB:
 
     def remove_argument(self, id: str):
         self.cur.execute(
-            "DELETE FROM arguments WHERE namelike||':'||position||':'||relative = ?",
+            "DELETE FROM arguments WHERE linkname||':'||position||':'||relative = ?",
             (id,)
         )
 
     def update_argument(self, id: str, value: str):
         self.cur.execute(
-            "UPDATE arguments SET value = ? WHERE namelike||':'||position||':'||relative = ?",
+            "UPDATE arguments SET value = ? WHERE linkname||':'||position||':'||relative = ?",
             (value, id)
         )
 
     def enable_interpreter(self, id: str, do: bool):
         self.cur.execute(
-            "UPDATE arguments SET active = ? WHERE namelike||':'||position||':'||relative = ?",
+            "UPDATE arguments SET active = ? WHERE linkname||':'||position||':'||relative = ?",
             (int(do), id)
         )
 

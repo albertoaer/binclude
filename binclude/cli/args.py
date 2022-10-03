@@ -25,7 +25,7 @@ class ArgsController:
     def ls(self):
         args = map(
             lambda x: (x[0], x[1], bool(x[2])),
-            useDB().arguments(["namelike||':'||position||':'||relative", 'value', 'active'])
+            useDB().arguments(["linkname||':'||position||':'||relative", 'value', 'active'])
         )
         print(tabulate(args, ['identifier', 'value', 'is active?']))
 

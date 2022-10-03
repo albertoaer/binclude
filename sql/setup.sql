@@ -45,13 +45,13 @@ CREATE TABLE IF NOT EXISTS links(
 
 /*
     Arguments that can modify a link based on the name
-    namelike: is the name pattern to match the argument
+    linkname: name of the link to match
     position: 0 head, 1 middle, 2 tail
     relative: the index inside position, just for identifying but does not mean an order
     value: the actual value of the argument
 */
 CREATE TABLE IF NOT EXISTS arguments(
-    namelike TEXT NOT NULL,
+    linkname TEXT NOT NULL,
     position NUMBER NOT NULL,
     relative NUMBER NOT NULL,
     value TEXT NOT NULL,
