@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from abc import ABC, abstractmethod
 from typing import List, Set
 
 #The window flag indicate whether you like not to see the console, used for gui programs
@@ -10,13 +10,24 @@ def wrap_args(args: List[str]) -> List[str]:
         nargs.append(f'"{arg}"')
     return nargs
 
-@dataclass
-class TemplateResult():
-    """
-    The result of building a template, including the formatted template in a string,
-    The consumed parameters, the extension that should have the template, and if the result can have no extension
-    """
-    output: str
-    attributes: Set[str]
-    extension: str
-    allow_no_extension: bool
+class Template(ABC):
+    def __init__(self, attrs: Set[str]) -> None:
+        self.attrs = attrs
+
+    @property
+    @abstractmethod
+    def extension(self) -> str:
+        pass
+
+    @property
+    def allow_no_extension(self) -> bool:
+        return False
+
+    @property
+    @abstractmethod
+    def consumed(self) -> Set[str]:
+        pass
+
+    @abstractmethod
+    def process(self, target: List[str]) -> str:
+        pass

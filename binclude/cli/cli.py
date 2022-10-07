@@ -5,8 +5,8 @@ from tabulate import tabulate
 from .args import ArgsController
 from .session import SessionController
 
-from ..links import build_for_target, include_link, rebuild_link
-from ..utils import abspath, base_origin, confirm, join_paths, origin, valid_dir, valid_name, write_into
+from ..links import save_link, rebuild_link, write_link
+from ..utils import abspath, base_origin, confirm, name_of, origin, valid_dir, valid_name, write_into
 from ..templates import templates
 from ..db import createDB, useDB
 
@@ -24,43 +24,30 @@ class CLIController:
         db = createDB()
         db.add_bin_dir(dir)
         db.commit()
-        self.add(origin(), BIN_NAME, 'python', protect=True)
+        self.add(origin(), BIN_NAME, 'python', p=True)
 
-    def add(
-        self,
-        file: str,
-        name: str,
-        uses: Union[str, None] = None,
-        attribs: Union[Set[str], None] = None,
-        protect: bool = False
-    ):
+    def add(self, file: str, n: str = "", u: str = "", a: Set = set(), p: bool = False):
         db = useDB()
-
-        if not valid_name(name):
+        name = n or name_of(file)
+        if not name or not valid_name(name):
             raise ValueError('Invalid name, format: (letter)[... letters and numbers]')
-
         # Create the required data
-        cmd = [abspath(file)]
-        if uses:
-            cmd.insert(0, uses)
-        if not attribs:
-            attribs = {}
-        dir = db.get_bin_dir()
-        active = db.get_interpreters(True)
-        interpreters = filter(lambda x: x in templates, map(lambda x: x[0], active))
+        cmd = [u if u else abspath(file)]
+        attrs = a or {}
+        active_interpreters = db.get_interpreters(True)
+        valid_interpreters = filter(lambda x: x in templates, map(lambda x: x[0], active_interpreters))
 
         registered_names = []
 
-        for interpreter in interpreters:
-            result = build_for_target(interpreter, cmd, attribs)
+        for interpreter_name in valid_interpreters:
+            template = templates[interpreter_name](attrs)
             lnname = name
-            if not result.allow_no_extension or name in registered_names:
-                lnname += result.extension
+            if not template.allow_no_extension or name in registered_names:
+                lnname += template.extension
             registered_names.append(lnname)
-            link = join_paths(dir, lnname)
             # If there is an error in the database like repeated name, the file won't be written
-            include_link(db, lnname, cmd, link, interpreter, attribs, protect)
-            write_into(result.output, link)
+            link = save_link(lnname, cmd, interpreter_name, attrs, p)
+            write_link(template.process(cmd), link)
             db.commit()
 
     def restore(self, name: str, deep: bool = False):
@@ -70,7 +57,7 @@ class CLIController:
             name: the link name
         """
         db = useDB()
-        res = db.link_by_name(name, ['program', 'file', 'link', 'interpreter', 'attribs'], deep)
+        res = db.link_by_name(name, ['program', 'file', 'dir', 'interpreter', 'attribs'], deep)
         if not res:
             raise Exception(f'Not found: {name}')
         for x in res:
@@ -84,7 +71,7 @@ class CLIController:
         Restores al the links stored in the database
         """
         db = useDB()
-        for res in db.links(['program', 'file', 'link', 'interpreter', 'attribs']):
+        for res in db.links(['program', 'file', 'dir', 'interpreter', 'attribs']):
             output, link = rebuild_link(*res)
             write_into(output, link)
 
@@ -97,7 +84,7 @@ class CLIController:
             force: force the remove (used for protected links)
         """
         db = useDB()
-        res = db.link_by_name(name, ['link', 'state'], deep)
+        res = db.link_by_name(name, ['dir', 'state'], deep)
         if not res:
             raise Exception(f'Not found: {name}')
         for x in res:
@@ -121,9 +108,9 @@ class CLIController:
 
         list() prints all the links registered in the db
         """
-        headers = 'name', 'file', 'program', 'link', 'interpreter', 'attribs', 'state'
+        headers = 'name', 'file', 'program', 'dir', 'interpreter', 'attribs', 'state'
         if short:
-            headers = 'name', 'file', 'link', 'state'
+            headers = 'name', 'file', 'dir', 'state'
         links = useDB().links(headers)
         print(tabulate(links, headers=headers))
 

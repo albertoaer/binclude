@@ -43,9 +43,9 @@ class DB:
         self.cur.execute('SELECT route FROM bin_dirs')
         return self.cur.fetchone()[0]
 
-    def add_link(self, name: str, file: str, program: str, link: str, interpreter: str, attributes: str, state: int):
+    def add_link(self, name: str, file: str, program: str, dir: str, interpreter: str, attributes: str, state: int):
         self.cur.execute('INSERT INTO links VALUES(?, ?, ?, ?, ?, ?, ?)',
-                         (name, file, program, link, interpreter, attributes, state))
+                         (name, file, program, dir, interpreter, attributes, state))
 
     def links(self, columns: List[str]) -> list:
         self.cur.execute(f"SELECT {', '.join(columns)} FROM links")
@@ -80,14 +80,14 @@ class DB:
         self.cur.execute(query, items)
         return list(map(lambda f: (f[0], bool(f[1])), self.cur.fetchall()))
 
-    def add_argument(self, namelike: str, position: int, value: str):
+    def add_argument(self, linkname: str, position: int, value: str):
         self.cur.execute(
-            'SELECT MAX(relative) FROM arguments WHERE namelike = ? AND position = ?',
-            (namelike, position)
+            'SELECT MAX(relative) FROM arguments WHERE linkname = ? AND position = ?',
+            (linkname, position)
         )
         elem = self.cur.fetchone()
         relative = 0 if elem[0] is None else elem[0] + 1
-        self.cur.execute('INSERT INTO arguments VALUES(?,?,?,?,?)', (namelike, position, relative, value, 1))
+        self.cur.execute('INSERT INTO arguments VALUES(?,?,?,?,?)', (linkname, position, relative, value, 1))
 
     def arguments(self, columns: List[str]) -> list:
         self.cur.execute(f"SELECT {', '.join(columns)} FROM arguments")

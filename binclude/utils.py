@@ -3,6 +3,7 @@ import sys
 import re
 
 from os.path import abspath
+from typing import Union
 
 def origin() -> str:
     return abspath(sys.argv[0])
@@ -27,6 +28,17 @@ def write_into(data: str, *path: str):
     file = join_paths(*path)
     with open(file, 'w') as writable:
         writable.write(data)
+
+def name_of(file: str) -> Union[str, None]:
+    """
+    A valid name obligatorily starts with a letter (lowercase or uppercase)
+    And it's followed from zero to many letters and numbers
+    """
+    base = os.path.basename(file)
+    m = re.math('^[A-z][A-z0-9]*', base)
+    if m:
+        return str(m)
+    return None
 
 def valid_name(name: str) -> bool:
     """

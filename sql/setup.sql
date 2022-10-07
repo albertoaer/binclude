@@ -28,7 +28,7 @@ INSERT INTO interpreters VALUES('python', 1);
     name: the link identifier to manipulate it
     file: the path to the linked file
     program: the interpreter of the source or the source if the source is a program
-    link: the file located at the bin folder
+    dir: the bin folder where the link is
     interpreter: the target interpreter
     attribs: the attributes
     state: indicates the link condition
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS links(
     name TEXT PRIMARY KEY,
     file TEXT NOT NULL,
     program TEXT NOT NULL,
-    link TEXT UNIQUE NOT NULL,
+    dir TEXT NOT NULL REFERENCES bin_dirs,
     interpreter TEXT REFERENCES interpreters,
     attribs TEXT NOT NULL,
     state INT REFERENCES states(id)
@@ -56,6 +56,6 @@ CREATE TABLE IF NOT EXISTS arguments(
     relative NUMBER NOT NULL,
     value TEXT NOT NULL,
     active INT CHECK(active = 0 OR active = 1),
-    PRIMARY KEY (namelike, position, relative),
+    PRIMARY KEY (linkname, position, relative),
     CHECK (position BETWEEN 0 AND 2) /*position must be between 0 and 2*/
 )

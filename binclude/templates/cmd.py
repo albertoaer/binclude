@@ -1,6 +1,6 @@
 from typing import List, Set
 
-from .common import TemplateResult, wrap_args
+from .common import Template, wrap_args
 
 
 template = """@ECHO off
@@ -8,5 +8,14 @@ template = """@ECHO off
 EXIT /b %errorlevel%
 """
 
-def build_template(target: List[str], _: Set[str]) -> TemplateResult:
-    return TemplateResult(template.format(target=' '.join(wrap_args(target))), {}, '.cmd', False)
+class CmdTemplate(Template):
+    @property
+    def extension(self) -> str:
+        return '.cmd'
+
+    @property
+    def consumed(self) -> Set[str]:
+        return set()
+
+    def process(self, target: List[str]) -> str:
+        return template.format(target=' '.join(wrap_args(target)))

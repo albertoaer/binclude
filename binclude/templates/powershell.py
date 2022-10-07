@@ -1,10 +1,19 @@
 from typing import List, Set
 
-from .common import TemplateResult
+from .common import Template
 
 
 template = """& "{target}" $args
 exit $LASTEXITCODE"""
 
-def build_template(target: List[str], attrs: Set[str]) -> TemplateResult:
-    return TemplateResult(template.format(target=' '.join(target)), {}, '.ps1', False)
+class PowershellTemplate(Template):
+    @property
+    def extension(self) -> str:
+        return '.ps1'
+        
+    @property
+    def consumed(self) -> Set[str]:
+        return set()
+
+    def process(self, target: List[str]) -> str:
+        return template.format(target=' '.join(target))
