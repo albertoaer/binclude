@@ -6,27 +6,35 @@ from .templates import templates
 
 def save_link(
     name: str,
-    cmd: List[str],
+    program: str,
+    file: str,
     interpreter: str,
     attribs: List[str],
     protect: bool
-) -> str:
-    if len(cmd) == 0 or len(cmd) > 2:
-        raise ValueError('The command must have between 1 and 2 elements')
+):
     db = useDB()
     dir = db.get_bin_dir()
     db.add_link(
-        name, cmd[-1], cmd[0], dir, interpreter, ','.join(attribs), int(protect)
+        name, file, program, dir, interpreter, ','.join(attribs), int(protect)
     )
-    return join_paths(dir, name)
 
-def rebuild_link(program: str, file: str, link: str, interpreter: str, attribs: str) -> Tuple[str, str]:
-    cmd = [program]
-    if program != file:
-        cmd.append(file)
+def args_of_link(name: str) -> List[str]:
+    db = useDB()
+    args = db.active_arguments_of(name)
+    return list(map(lambda a: a[0], args))
+    
+
+def build_link(name: str) -> Tuple[str, str]:
+    db = useDB()
+    links = db.link_by_name(name, ['program', 'file', 'attribs', 'interpreter', 'dir', 'name'], False)
+    if not links:
+        raise ValueError(f'{name} is not a valid link')
+    program, file, attribs, interpreter, *ln = links[0]
+    args = args_of_link(name)
+    cmd = list(filter(lambda x: bool(x), [program, file]))
     template = templates[interpreter](attribs.split(','))
-    return template.process(cmd), link
+    return template.process(cmd + args), join_paths(*ln)
 
-def write_link(data: str, link: str):
-    dir = useDB().get_bin_dir()
-    write_into(data, dir, link)
+def write_link(name: str):
+    data, link = build_link(name)
+    write_into(data, link)

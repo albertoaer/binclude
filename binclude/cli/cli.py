@@ -5,7 +5,7 @@ from tabulate import tabulate
 from .args import ArgsController
 from .session import SessionController
 
-from ..links import save_link, rebuild_link, write_link
+from ..links import save_link, write_link
 from ..utils import abspath, base_origin, confirm, name_of, origin, valid_dir, valid_name, write_into
 from ..templates import templates
 from ..db import createDB, useDB
@@ -32,7 +32,7 @@ class CLIController:
         if not name or not valid_name(name):
             raise ValueError('Invalid name, format: (letter)[... letters and numbers]')
         # Create the required data
-        cmd = [u if u else abspath(file)]
+        file = abspath(file)
         attrs = a or {}
         active_interpreters = db.get_interpreters(True)
         valid_interpreters = filter(lambda x: x in templates, map(lambda x: x[0], active_interpreters))
@@ -46,61 +46,60 @@ class CLIController:
                 lnname += template.extension
             registered_names.append(lnname)
             # If there is an error in the database like repeated name, the file won't be written
-            link = save_link(lnname, cmd, interpreter_name, attrs, p)
-            write_link(template.process(cmd), link)
+            save_link(lnname, u or None, file, interpreter_name, attrs, p)
+            write_link(lnname)
             db.commit()
 
-    def restore(self, name: str, deep: bool = False):
+    def restore(self, name: str, d: bool = False):
         """
         Restores a physical link file from the database
         Arguments:
             name: the link name
+            d: deep restore (remove all similars)
         """
         db = useDB()
-        res = db.link_by_name(name, ['program', 'file', 'dir', 'interpreter', 'attribs'], deep)
+        res = db.link_by_name(name, ['name'], d)
         if not res:
             raise Exception(f'Not found: {name}')
         for x in res:
-            if not res:
-                raise Exception(f'Not found: {name}')
-            output, link = rebuild_link(*x)
-            write_into(output, link)
+            write_link(x[0])
 
     def repair(self):
         """
         Restores al the links stored in the database
         """
         db = useDB()
-        for res in db.links(['program', 'file', 'dir', 'interpreter', 'attribs']):
-            output, link = rebuild_link(*res)
-            write_into(output, link)
+        for res in db.links(['name']):
+            write_link(res[0])
 
-    def remove(self, name: str, force: bool = False, deep: bool = False, purge: bool = False):
+    def remove(self, name: str, f: bool = False, d: bool = False, p: bool = False):
         """
         Removes the physical file associated to a name
         The link will remain in the database
         Arguments:
             name: the link name
-            force: force the remove (used for protected links)
+            f: force the remove (used for protected links)
+            d: deep remove (remove all similars)
+            p: purge remove (remove the link in the db)
         """
         db = useDB()
-        res = db.link_by_name(name, ['dir', 'state'], deep)
+        res = db.link_by_name(name, ['dir', 'state'], d)
         if not res:
             raise Exception(f'Not found: {name}')
         for x in res:
             #The link must not be protected or the removal must be forced to proceed
-            if x[1] == 1 and not force:
+            if x[1] == 1 and not f:
                 raise Exception('Trying to remove protected link, use --force if you are sure')
             try:
                 os.remove(x[0])
                 print("Removed", x[0])
             except Exception as e:
                 print("INFO ERR:", e)
-        if purge:
-            db.remove_link(name, deep)
+        if p:
+            db.remove_link(name, d)
             if confirm('purge'):
                 db.commit()
-                print("Purged", name, 'deep' if deep else '')
+                print("Purged", name, 'deep' if d else '')
 
     def ls(self, short: bool = False):
         """
@@ -143,4 +142,4 @@ class CLIController:
             print('sqlite3 > ', end='')
             query = input()
             if query:
-                print(db.execute(query))
+                print(tabulate(db.execute(query)))

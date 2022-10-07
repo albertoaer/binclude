@@ -92,6 +92,15 @@ class DB:
     def arguments(self, columns: List[str]) -> list:
         self.cur.execute(f"SELECT {', '.join(columns)} FROM arguments")
         return self.cur.fetchall()
+    
+    def active_arguments_of(self, name: str) -> list:
+        self.cur.execute(
+            f"""SELECT value FROM arguments
+            WHERE active = 1 AND ? = linkname OR ? LIKE linkname||'.%'
+            ORDER BY position, relative""",
+            (name, name)
+        )
+        return self.cur.fetchall()
 
     def remove_argument(self, id: str):
         self.cur.execute(

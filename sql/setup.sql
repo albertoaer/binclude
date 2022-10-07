@@ -36,7 +36,7 @@ INSERT INTO interpreters VALUES('python', 1);
 CREATE TABLE IF NOT EXISTS links(
     name TEXT PRIMARY KEY,
     file TEXT NOT NULL,
-    program TEXT NOT NULL,
+    program TEXT,
     dir TEXT NOT NULL REFERENCES bin_dirs,
     interpreter TEXT REFERENCES interpreters,
     attribs TEXT NOT NULL,
